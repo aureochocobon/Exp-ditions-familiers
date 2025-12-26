@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur d'Expéditions - Crownicles</title>
+    <meta name="description" content="Simulateur d'expéditions de familiers pour Crownicles - Calculez les récompenses et taux de succès">
+    <style>
+        : root {
+            --bg-primary: #667eea;
+            --bg-secondary: #764ba2;
+            --bg-tertiary: #5a67d8;
+            --accent: #f6ad55;
+            --text-primary: #ffffff;
+            --text-secondary:  #e2e8f0;
+            --success: #48bb78;
+            --warning:  #f6ad55;
+            --danger: #fc8181;
+            --info: #63b3ed;
+        }
+
+        * {
+            margin: 0;
+            padding:  0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background:  linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--text-primary);
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+            font-size: 2.5rem;
+        }
+
+        h2 {
+            color: var(--accent);
+            margin-bottom: 15px;
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 8px;
+            font-weight: 700;
+        }
+
+        h3 {
+            color: var(--warning);
+            margin:  20px 0 10px 0;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom:  25px;
+            box-shadow:  0 8px 20px rgba(0, 0, 0, 0.3);
+            color: #2d3748;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 600;
+            font-size: 1.05em;
+        }
+
+        select, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 2px solid #cbd5e0;
+            background: white;
+            color: #2d3748;
+            font-size: 15px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        select: focus, input: focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(246, 173, 85, 0.2);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns:  repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--accent) 0%, #ed8936 100%);
+            color: white;
+            padding: 15px 35px;
+            border: none;
+            border-radius: 12px;
+            font-size:  17px;
+            font-weight:  700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(246, 173, 85, 0.4);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        button: hover {
+            transform: translateY(-3px);
+            box-shadow:  0 6px 20px rgba(246, 173, 85, 0.6);
+        }
+
+        button:active {
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 14px 15px;
+            text-align:  left;
+            border-bottom:  1px solid #e2e8f0;
+            color: #2d3748;
+        }
+
+        th {
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-primary) 100%);
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 0.5px;
+        }
+
+        tr:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        . stat-value {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .success-rate { color: var(--success); font-weight: 700; }
+        .partial-rate { color: var(--warning); font-weight: 700; }
+        .failure-rate { color: var(--danger); font-weight: 700; }
+
+        .info-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius:  20px;
+            font-size: 12px;
+            font-weight:  600;
+        }
+
+        .badge-success { background: var(--success); color: #fff; }
+        .badge-warning { background: var(--warning); color: #fff; }
+        .badge-danger { background: var(--danger); color: #fff; }
+        .badge-info { background: var(--info); color: #fff; }
+
+        .slider-container {
+            position: relative;
+            padding-top: 5px;
+        }
+
+        . slider-value {
+            position: absolute;
+            right: 0;
+            top: -5px;
+            background: linear-gradient(135deg, var(--accent) 0%, #ed8936 100%);
+            padding: 5px 12px;
+            border-radius:  20px;
+            font-size: 13px;
+            font-weight:  700;
+            color: white;
+            box-shadow: 0 2px 8px rgba(246, 173, 85, 0.4);
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 12px;
+            border-radius: 10px;
+            background: linear-gradient(to right, #e2e8f0 0%, #cbd5e0 100%);
+            outline: none;
+            margin-top: 10px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance:  none;
+            width: 28px;
+            height: 28px;
+            border-radius:  50%;
+            background: linear-gradient(135deg, var(--accent) 0%, #ed8936 100%);
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(246, 173, 85, 0.5);
+            transition: all 0.3s;
+        }
+
+        input[type="range"]: :-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 15px rgba(246, 173, 85, 0.7);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent) 0%, #ed8936 100%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 10px rgba(246, 173, 85, 0.5);
+            transition: all 0.3s;
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 15px rgba(246, 173, 85, 0.7);
+        }
+
+        input[type="range"]:active: :-webkit-slider-thumb,
+        input[type="range"]:active::-moz-range-thumb {
+            background: linear-gradient(135deg, #ed8936 0%, var(--accent) 100%);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+
+        .pet-info {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .pet-stat {
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-primary) 100%);
+            color: white;
+            padding: 8px 14px;
+            border-radius:  8px;
+            font-size:  13px;
+            font-weight:  600;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 35px;
+            background: #e2e8f0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 10px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar-inner {
+            height: 100%;
+            display: flex;
+        }
+
+        .progress-success { background: var(--success); }
+        .progress-partial { background: var(--warning); }
+        .progress-failure { background: var(--danger); }
+
+        .searchable-select-container {
+            position: relative;
+        }
+
+        .pet-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 300px;
+            overflow-y: auto;
+            background: white;
+            border: 2px solid #cbd5e0;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .pet-dropdown.show {
+            display: block;
+        }
+
+        .pet-option {
+            padding: 12px 15px;
+            cursor:  pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #e2e8f0;
+            color: #2d3748;
+        }
+
+        .pet-option:hover, .pet-option.selected {
+            background: rgba(102, 126, 234, 0.15);
+        }
+
+        .pet-option-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .pet-option-stats {
+            font-size: 12px;
+            color: #718096;
+            margin-top:  3px;
+        }
+
+        . toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform:  translateX(-50%) translateY(100px);
+            background: linear-gradient(135deg, var(--success) 0%, #38a169 100%);
+            color: white;
+            padding:  15px 35px;
+            border-radius:  15px;
+            font-weight: 700;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top:  10px;
+        }
+
+        . location-option {
+            padding: 15px 10px;
+            border:  3px solid #cbd5e0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .location-option:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(246, 173, 85, 0.3);
+        }
+
+        .location-option.selected {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, rgba(246, 173, 85, 0.2) 0%, rgba(237, 137, 54, 0.2) 100%);
+            box-shadow: 0 4px 12px rgba(246, 173, 85, 0.4);
+        }
+
+        .location-option . icon {
+            font-size: 28px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .location-option .name {
+            font-size: 13px;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .duration-inputs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .duration-input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        . duration-input-group input {
+            width: 80px;
+            text-align: center;
+        }
+
+        .duration-input-group span {
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+
+            . location-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        small {
+            color: #718096 !important;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐾 Simulateur d'Expéditions de Familier</h1>
+
+        <div id="toast" class="toast">✅ Données chargées instantanément !</div>
+
+        <div class="card" id="configSection">
+            <h2>⚙️ Configuration de l'expédition</h2>
+            
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Familier à envoyer</label>
+                    <div class="searchable-select-container">
+                        <input type="text" id="petSearchInput" class="pet-search-input" placeholder="Rechercher un familier... ">
+                        <div id="petDropdown" class="pet-dropdown"></div>
+                        <input type="hidden" id="selectedPetId" value="">
+                    </div>
+                    <div id="petInfo" class="pet-info hidden">
+                        <span class="pet-stat">Force: <strong id="petForce">-</strong></span>
+                        <span class="pet-stat">Vitesse: <strong id="petSpeed">-</strong></span>
+                        <span class="pet-stat">Rareté: <strong id="petRarity">-</strong></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="lovePoints">Points d'amour du familier (0-110)</label>
+                    <div class="slider-container">
+                        <span class="slider-value" id="lovePointsValue">100</span>
+                        <input type="range" id="lovePoints" min="0" max="110" value="100">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Type d'expédition (lieu)</label>
+                <div class="location-grid" id="locationGrid">
+                    <div class="location-option selected" data-location="plains">
+                        <span class="icon">🌾</span>
+                        <span class="name">Plaines</span>
+                    </div>
+                    <div class="location-option" data-location="forest">
+                        <span class="icon">🌲</span>
+                        <span class="name">Forêt</span>
+                    </div>
+                    <div class="location-option" data-location="mountain">
+                        <span class="icon">⛰️</span>
+                        <span class="name">Montagne</span>
+                    </div>
+                    <div class="location-option" data-location="desert">
+                        <span class="icon">🏜️</span>
+                        <span class="name">Désert</span>
+                    </div>
+                    <div class="location-option" data-location="swamp">
+                        <span class="icon">🐸</span>
+                        <span class="name">Marais</span>
+                    </div>
+                    <div class="location-option" data-location="coast">
+                        <span class="icon">🏖️</span>
+                        <span class="name">Côte</span>
+                    </div>
+                    <div class="location-option" data-location="ruins">
+                        <span class="icon">🏛️</span>
+                        <span class="name">Ruines</span>
+                    </div>
+                    <div class="location-option" data-location="cave">
+                        <span class="icon">🕳️</span>
+                        <span class="name">Caverne</span>
+                    </div>
+                </div>
+                <small id="locationInfo" style="color: #718096; margin-top: 10px; display: block;">
+                    Bonus:  Argent ×1. 0, XP ×1.0, Points ×1.0
+                </small>
+            </div>
+
+            <div class="grid-3">
+                <div class="form-group">
+                    <label for="wealthRate">Richesse (0. 0 - 2.0)</label>
+                    <div class="slider-container">
+                        <span class="slider-value" id="wealthRateValue">1.0</span>
+                        <input type="range" id="wealthRate" min="0" max="200" value="100" step="1">
+                    </div>
+                    <small id="wealthCategory" style="color: #718096;">Catégorie:  Modestes</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="riskRate">Dangerosité (0 - 100)</label>
+                    <div class="slider-container">
+                        <span class="slider-value" id="riskRateValue">30</span>
+                        <input type="range" id="riskRate" min="0" max="100" value="30">
+                    </div>
+                    <small id="riskCategory" style="color: #718096;">Catégorie: Peu risqué</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="difficulty">Difficulté du terrain (0 - 100)</label>
+                    <div class="slider-container">
+                        <span class="slider-value" id="difficultyValue">30</span>
+                        <input type="range" id="difficulty" min="0" max="100" value="30">
+                    </div>
+                    <small id="difficultyCategory" style="color: #718096;">Catégorie: Accessible</small>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Durée de l'expédition</label>
+                    <div class="duration-inputs">
+                        <div class="duration-input-group">
+                            <input type="number" id="durationDays" min="0" max="3" value="0">
+                            <span>jours</span>
+                        </div>
+                        <div class="duration-input-group">
+                            <input type="number" id="durationHours" min="0" max="23" value="1">
+                            <span>heures</span>
+                        </div>
+                        <div class="duration-input-group">
+                            <input type="number" id="durationMinutes" min="0" max="59" value="0">
+                            <span>min</span>
+                        </div>
+                    </div>
+                    <small id="durationDisplay" style="color: #718096; margin-top: 5px; display: block;">= 60 minutes au total</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Options</label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="hasCloneTalisman">
+                        <label for="hasCloneTalisman" style="margin-bottom: 0; cursor: pointer;">
+                            Possède déjà le Talisman de Clonage
+                        </label>
+                    </div>
+                    <div class="checkbox-group" style="margin-top: 10px;">
+                        <input type="checkbox" id="hasCloneTalismanBonus">
+                        <label for="hasCloneTalismanBonus" style="margin-bottom:  0; cursor: pointer;">
+                            Expédition avec bonus Talisman de Clonage
+                        </label>
+                    </div>
+                    <div class="checkbox-group" style="margin-top: 10px;">
+                        <input type="checkbox" id="hasFood" checked>
+                        <label for="hasFood" style="margin-bottom: 0; cursor: pointer;">
+                            A assez de provisions
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <button id="calculateBtn">🎲 Calculer les résultats</button>
+        </div>
+
+        <div class="card results-section hidden" id="resultsSection">
+            <h2>📊 Résultats de l'estimation</h2>
+
+            <h3>📋 Récapitulatif de l'expédition</h3>
+            <table id="summaryTable">
+                <thead>
+                    <tr>
+                        <th>Paramètre</th>
+                        <th>Valeur</th>
+                        <th>Catégorie</th>
+                    </tr>
+                </thead>
+                <tbody id="summaryBody">
+                    <tr><td colspan="3" style="text-align: center; color: #718096;">Cliquez sur "Calculer les résultats"</td></tr>
+                </tbody>
+            </table>
+
+            <h3>🎯 Taux de succès</h3>
+            <div class="progress-bar">
+                <div class="progress-bar-inner" id="successBar">
+                    <div class="progress-success" style="width: 0%"></div>
+                    <div class="progress-partial" style="width: 0%"></div>
+                    <div class="progress-failure" style="width: 0%"></div>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 13px; font-weight: 600;">
+                <span class="success-rate">🟢 Succès total: <span id="totalSuccessRate">-</span></span>
+                <span class="partial-rate">🟡 Succès partiel: <span id="partialSuccessRate">-</span></span>
+                <span class="failure-rate">🔴 Échec:  <span id="failureRate">-</span></span>
+            </div>
+
+            <h3>💰 Récompenses estimées</h3>
+            <table id="rewardsTable">
+                <thead>
+                    <tr>
+                        <th>Récompense</th>
+                        <th>Succès total</th>
+                        <th>Succès partiel</th>
+                    </tr>
+                </thead>
+                <tbody id="rewardsBody">
+                    <tr><td colspan="3" style="text-align: center; color:  #718096;">Cliquez sur "Calculer les résultats"</td></tr>
+                </tbody>
+            </table>
+
+            <h3>🎁 Chances d'items et talisman</h3>
+            <table id="itemsTable">
+                <thead>
+                    <tr>
+                        <th>Élément</th>
+                        <th>Chance / Valeur</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsBody">
+                    <tr><td colspan="2" style="text-align: center; color: #718096;">Cliquez sur "Calculer les résultats"</td></tr>
+                </tbody>
+            </table>
+
+            <h3>💕 Effets sur les points d'amour</h3>
+            <table id="loveTable">
+                <thead>
+                    <tr>
+                        <th>Résultat</th>
+                        <th>Changement d'amour</th>
+                        <th>Probabilité</th>
+                    </tr>
+                </thead>
+                <tbody id="loveBody">
+                    <tr><td colspan="3" style="text-align: center; color: #718096;">Cliquez sur "Calculer les résultats"</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>Simulateur d'expéditions pour <a href="https://github.com/Crownicles/Crownicles" target="_blank">Crownicles</a></p>
+            <p>Version autonome avec données embarquées | Mis à jour le 2025-12-26</p>
+        </div>
+    </div>
+
+    <script>
+        // DONNÉES EMBARQUÉES (chargement instantané)
+        const EMBEDDED_PETS_DATA = {"0": {"rarity": 0,"force":0,"feedDelay":1,"speed":0},"1":{"rarity":1,"diet":"carnivorous","force":8,"feedDelay":3,"speed":18},"2":{"rarity": 1,"diet":"carnivorous","force":4,"feedDelay":3,"speed":12},"3":{"rarity": 1,"diet":"carnivorous","force":4,"feedDelay":3,"speed":15},"4":{"rarity": 1,"diet":"carnivorous","force":4,"feedDelay": 3,"speed":15},"5":{"rarity":1,"force":1,"feedDelay":1,"speed":8},"6":{"rarity": 1,"diet":"herbivorous","force":1,"feedDelay":1,"speed":6},"7":{"rarity": 1,"diet":"herbivorous","force":2,"feedDelay":2,"speed":14},"8":{"rarity": 1,"diet":"herbivorous","force":20,"feedDelay":2,"speed":5},"9":{"rarity": 1,"diet":"herbivorous","force":10,"feedDelay":3,"speed":6},"10":{"rarity": 1,"diet":"herbivorous","force":1,"feedDelay":1,"speed":7},"11":{"rarity": 1,"diet":"herbivorous","force":1,"feedDelay":2,"speed":20},"12":{"rarity": 1,"diet":"herbivorous","force":1,"feedDelay": 1,"speed":8},"13":{"rarity": 2,"diet":"herbivorous","force":15,"feedDelay":2,"speed":28},"14":{"rarity": 3,"diet":"herbivorous","force":2,"feedDelay":7,"speed":2},"15":{"rarity": 3,"diet":"carnivorous","force":12,"feedDelay":10,"speed":10},"16":{"rarity": 3,"diet":"carnivorous","force":1,"feedDelay":5,"speed":12},"17":{"rarity": 2,"diet":"herbivorous","force":11,"feedDelay":1,"speed":10},"18":{"rarity": 2,"diet":"herbivorous","force":11,"feedDelay":3,"speed":11},"19":{"rarity": 2,"diet":"herbivorous","force":2,"feedDelay":1,"speed":5},"20":{"rarity": 2,"diet":"carnivorous","force":13,"feedDelay":5,"speed":22},"21":{"rarity": 4,"diet":"carnivorous","force":26,"feedDelay":7,"speed":14},"22":{"rarity": 3,"diet":"herbivorous","force":2,"feedDelay":9,"speed":3},"23": {"rarity":2,"diet":"herbivorous","force":1,"feedDelay":5,"speed":6},"24":{"rarity": 5,"diet":"herbivorous","force":13,"feedDelay":3,"speed":16},"25":{"rarity":3,"diet":"carnivorous","force":6,"feedDelay":4,"speed":8},"26": {"rarity":2,"diet":"carnivorous","force":4,"feedDelay":5,"speed":18},"27":{"rarity": 2,"diet":"carnivorous","force":3,"feedDelay":5,"speed":22},"28":{"rarity": 4,"diet":"carnivorous","force":19,"feedDelay":6,"speed":25},"29":{"rarity": 2,"force":14,"feedDelay":3,"speed":18},"30":{"rarity": 2,"diet":"carnivorous","force":8,"feedDelay":5,"speed":12},"31":{"rarity": 3,"diet":"herbivorous","force":29,"feedDelay":4,"speed":8},"32":{"rarity": 3,"diet":"herbivorous","force":8,"feedDelay":5,"speed":15},"33":{"rarity": 3,"diet":"herbivorous","force":5,"feedDelay":4,"speed":14},"34":{"rarity": 3,"force":2,"feedDelay":3,"speed":10},"35":{"rarity":3,"force":7,"feedDelay":3,"speed":13},"36":{"rarity": 3,"diet":"carnivorous","force":3,"feedDelay":4,"speed":9},"37":{"rarity": 3,"force":6,"feedDelay":4,"speed":11},"38":{"rarity": 3,"diet":"herbivorous","force":4,"feedDelay":3,"speed":7},"39":{"rarity": 4,"diet":"herbivorous","force":1,"feedDelay":10,"speed":1},"40":{"rarity": 4,"diet":"herbivorous","force":1,"feedDelay": 1,"speed":17},"41":{"rarity": 4,"force":1,"feedDelay":4,"speed":6},"42":{"rarity": 4,"diet":"carnivorous","force":30,"feedDelay":8,"speed":12},"43":{"rarity": 4,"diet":"herbivorous","force":16,"feedDelay":1,"speed":8},"44":{"rarity": 4,"diet":"carnivorous","force":5,"feedDelay":6,"speed":9},"45":{"rarity": 4,"diet":"carnivorous","force":28,"feedDelay":10,"speed":12},"46":{"rarity": 4,"diet":"herbivorous","force":30,"feedDelay":2,"speed":10},"47":{"rarity": 4,"diet":"herbivorous","force":15,"feedDelay":2,"speed":27},"48":{"rarity": 5,"diet":"herbivorous","force":30,"feedDelay":5,"speed":16},"49":{"rarity": 5,"diet":"herbivorous","force":21,"feedDelay":10,"speed":20},"50":{"rarity": 5,"diet":"herbivorous","force":21,"feedDelay":10,"speed":18},"51":{"rarity": 5,"diet":"herbivorous","force":12,"feedDelay":2,"speed":19},"52":{"rarity": 5,"diet":"herbivorous","force":17,"feedDelay":3,"speed":23},"53":{"rarity": 5,"diet":"herbivorous","force":2,"feedDelay":2,"speed":9},"54":{"rarity": 5,"force":3,"feedDelay":3,"speed":16},"55":{"rarity": 5,"diet":"carnivorous","force":4,"feedDelay":3,"speed":14},"56":{"rarity": 5,"diet":"carnivorous","force":28,"feedDelay":8,"speed":24},"57":{"rarity": 6,"diet":"carnivorous","force":28,"feedDelay":8,"speed":26},"58":{"rarity": 6,"diet":"carnivorous","force":8,"feedDelay":7,"speed":28},"59":{"rarity": 6,"diet":"herbivorous","force":1,"feedDelay":3,"speed":3},"60":{"rarity": 6,"diet":"carnivorous","force":24,"feedDelay":8,"speed":30},"61": {"rarity":6,"diet":"herbivorous","force":26,"feedDelay":4,"speed":7},"62": {"rarity":1,"diet":"herbivorous","force":1,"feedDelay":2,"speed":15},"63":{"rarity": 7,"force":20,"feedDelay":6,"speed":30},"64":{"rarity": 7,"diet":"carnivorous","force":30,"feedDelay":10,"speed":25},"65":{"rarity": 7,"diet":"carnivorous","force":30,"feedDelay":8,"speed":16},"66":{"rarity": 7,"force":18,"feedDelay":6,"speed":20},"67":{"rarity": 6,"diet":"herbivorous","force":5,"feedDelay":10,"speed":4},"68":{"rarity": 7,"diet":"herbivorous","force":30,"feedDelay":1,"speed":8},"69":{"rarity": 7,"diet":"herbivorous","force":6,"feedDelay":10,"speed":4},"70":{"rarity": 7,"force":20,"feedDelay":6,"speed":22},"71":{"rarity": 5,"force":7,"feedDelay":4,"speed":10},"72":{"rarity": 6,"force":6,"feedDelay":4,"speed":6},"73":{"rarity": 1,"diet":"carnivorous","force":4,"feedDelay":3,"speed":15},"74":{"rarity": 7,"diet":"carnivorous","force":4,"feedDelay":2,"speed":14},"75":{"rarity": 6,"diet":"carnivorous","force":3,"feedDelay":3,"speed":5},"76":{"rarity": 4,"diet":"carnivorous","force":6,"feedDelay":9,"speed":3},"77":{"rarity": 6,"diet":"carnivorous","force":26,"feedDelay":7,"speed":28},"78":{"rarity": 5,"diet":"carnivorous","force":30,"feedDelay":4,"speed":18},"79":{"rarity": 7,"diet":"carnivorous","force":30,"feedDelay":4,"speed":17},"80":{"rarity": 4,"diet":"carnivorous","force":1,"feedDelay":1,"speed":8},"81":{"rarity": 6,"diet":"carnivorous","force":5,"feedDelay":5,"speed":5},"82":{"rarity": 6,"diet":"carnivorous","force":12,"feedDelay":5,"speed":29},"83":{"rarity": 7,"force":30,"feedDelay":10,"speed":30},"84":{"rarity": 7,"diet":"herbivorous","force":22,"feedDelay":6,"speed":6},"85":{"rarity": 1,"diet":"herbivorous","force":1,"feedDelay":5,"speed":1},"86":{"rarity": 4,"force":3,"feedDelay":3,"speed":7},"87":{"rarity": 5,"force":16,"feedDelay":3,"speed":24},"88":{"rarity": 6,"force":22,"feedDelay":2,"speed":14},"89":{"rarity": 5,"force":24,"feedDelay":2,"speed":17},"90":{"rarity": 6,"force":18,"feedDelay":5,"speed":9},"91":{"rarity": 6,"force":27,"feedDelay":3,"speed":11},"92":{"rarity": 1,"force":1,"feedDelay":1,"speed":5},"93": {"rarity":2,"force":3,"feedDelay":1,"speed":12},"94":{"rarity": 7,"force":1,"feedDelay":2,"speed":18},"95":{"rarity": 7,"force":3,"feedDelay":5,"speed":17},"96":{"rarity": 3,"force":9,"feedDelay":4,"speed":12},"101":{"rarity":8,"diet":"carnivorous","force":25,"feedDelay":8,"speed":28}};
+
+        const EMBEDDED_PET_NAMES = {"0":"Aucun","1":"Corbeau","2":"Renard","3":"Loup","4":"Chouette","5":"Serpent","6":"Lapin","7":"Chèvre","8":"Ours","9":"Sanglier","10":"Souris","11":"Cerf","12":"Écureuil","13":"Cerf majestueux","14":"Tortue","15":"Crocodile","16":"Rat","17":"Mouton","18":"Cheval","19":"Hérisson","20":"Lynx","21":"Tigre","22":"Tortue géante","23":"Taupe","24":"Licorne","25":"Hyène","26":"Guépard","27":"Chat","28":"Lion","29":"Paon","30":"Chien","31":"Rhinocéros","32":"Daim","33":"Gazelle","34":"Caméléon","35":"Panda roux","36":"Renard polaire","37":"Raton laveur","38":"Vache","39":"Koala","40":"Perroquet","41":"Castor","42":"Bison","43":"Éléphant","44":"Belette","45":"Grizzly","46":"Hippopotame","47":"Antilope","48":"Pégase","49":"Girafe","50":"Okapi","51":"Moufette","52":"Lama","53":"Tatou","54":"Phénix","55":"Fouine","56":"Panthère","57":"Jaguar","58":"Guépard royal","59":"Paresseux","60":"Léopard","61":"Éléphant royal","62":"Poule","63":"Griffon","64":"Tigre du Bengale","65":"Ours polaire","66":"Aigle royal","67":"Wombat","68":"Éléphant d'Afrique","69":"Wombat nain","70":"Paon royal","71":"Loutre","72":"Opossum","73":"Chacal","74":"Basilic","75":"Mangouste","76":"Glouton","77":"Léopard des neiges","78":"Loup d'Abyssinie","79":"Puma","80":"Chauve-souris","81":"Tamanoir","82":"Oryx","83":"Dragon","84":"Autruche","85":"Hamster","86":"Putois","87":"Furet","88":"Zèbre","89":"Fennec","90":"Panda","91":"Buffle d'eau","92":"Moineau","93":"Iguane","94":"Amphiptère","95":"Vouivre","96":"Blaireau","101":"Draconide"};
+
+        const ExpeditionConstants = {
+            DURATION:  { MIN_MINUTES: 10, MAX_MINUTES: 3 * 24 * 60 },
+            RISK_RATE: { MIN:  0, MAX: 100 },
+            DIFFICULTY: { MIN: 0, MAX: 100 },
+            WEALTH_RATE: { MIN: 0.0, MAX: 2.0 },
+            RISK_DISPLAY_CATEGORIES: {
+                VERY_LOW: { MAX: 15, NAME: "veryLow" },
+                LOW: { MAX: 30, NAME: "low" },
+                MEDIUM: { MAX: 50, NAME: "medium" },
+                HIGH: { MAX: 70, NAME: "high" },
+                VERY_HIGH: { MAX: 100, NAME: "veryHigh" }
+            },
+            DIFFICULTY_DISPLAY_CATEGORIES: {
+                TRIVIAL: { MAX: 20, NAME: "trivial" },
+                EASY: { MAX:  40, NAME: "easy" },
+                MODERATE: { MAX: 60, NAME: "moderate" },
+                CHALLENGING: { MAX: 80, NAME: "challenging" },
+                TREACHEROUS: { MAX: 100, NAME: "treacherous" }
+            },
+            REWARD_DISPLAY_CATEGORIES: {
+                MEAGER: { MAX: 1, NAME: "meager" },
+                MODEST: { MAX:  3, NAME: "modest" },
+                SUBSTANTIAL: { MAX: 5, NAME: "substantial" },
+                BOUNTIFUL: { MAX: 7, NAME: "bountiful" },
+                LEGENDARY: { MAX: 9, NAME: "legendary" }
+            },
+            REWARD_TABLES: {
+                MONEY: [50, 120, 235, 435, 710, 1300, 2100, 3200, 4200, 5000],
+                EXPERIENCE: [50, 150, 350, 600, 950, 1400, 1950, 2550, 3000, 3500],
+                POINTS: [6, 20, 75, 145, 210, 340, 420, 585, 650, 710]
+            },
+            FOOD_CONSUMPTION: [1, 3, 5, 6, 8, 10, 12, 15, 25, 32],
+            WEALTH_RATE_REWARD_INDEX_BONUS: 0.30,
+            EFFECTIVE_RISK_FORMULA: {
+                DIFFICULTY_DIVISOR: 3,
+                LOVE_DIVISOR: 10
+            },
+            NO_FOOD_RISK_MULTIPLIER: 3,
+            LOVE_CHANGES:  {
+                TOTAL_FAILURE:  -10,
+                TOTAL_SUCCESS:  5
+            },
+            CLONE_TALISMAN:  {
+                BASE_DROP_CHANCE: 0.5,
+                REWARD_INDEX_BONUS_PER_POINT: 0.5,
+                BONUS_EXPEDITION_MULTIPLIER: 10
+            },
+            ITEM_REWARD:  {
+                MIN_RARITY_OFFSET: 3,
+                MIN_RARITY_FLOOR: 1,
+                MAX_RARITY_BY_REWARD_INDEX: [5, 5, 6, 7, 8, 8, 8, 8, 8, 8]
+            },
+            SPEED_DURATION_MODIFIER: {
+                MIN_SPEED:  0,
+                MAX_SPEED: 30,
+                BASE_MULTIPLIER: 1.20,
+                REDUCTION_PER_SPEED_POINT: 0.01666
+            },
+            LOCATION_REWARD_WEIGHTS: {
+                forest: { money: 0.8, experience: 1.3, points: 0.9 },
+                mountain: { money: 1.9, experience: 1, points: 0.3 },
+                desert: { money: 0.6, experience: 0.4, points: 1.5 },
+                swamp: { money: 0.4, experience: 1, points: 1.6 },
+                ruins: { money: 1.7, experience: 1, points: 0.5 },
+                cave: { money: 2.2, experience: 0.5, points: 0.2 },
+                plains: { money: 1, experience: 1, points: 1 },
+                coast: { money: 1.2, experience: 0.7, points: 0.8 }
+            }
+        };
+
+        const translations = {
+            riskCategories: {
+                veryLow: "Paisible",
+                low: "Peu risqué",
+                medium: "Modéré",
+                high: "Dangereux",
+                veryHigh: "Périlleux"
+            },
+            difficultyCategories: {
+                trivial: "Aisé",
+                easy: "Accessible",
+                moderate: "Exigeant",
+                challenging:  "Ardu",
+                treacherous:  "Impitoyable"
+            },
+            rewardCategories: {
+                meager: "Maigres",
+                modest: "Modestes",
+                substantial: "Correctes",
+                bountiful:  "Abondantes",
+                legendary: "Exceptionnelles"
+            },
+            wealthCategories: {
+                meager: "Pauvres",
+                modest: "Modestes",
+                substantial:  "Riches",
+                legendary: "Légendaires"
+            },
+            itemRarities: [
+                "Basique", "Commun", "Peu commun", "Exotique",
+                "Rare", "Spécial", "Épique", "Légendaire", "Mythique"
+            ],
+            petRarities: [
+                "Aucun", "Commun", "Peu commun", "Rare",
+                "Spécial", "Épique", "Légendaire", "Mythique"
+            ],
+            locationNames: {
+                plains: "Plaines", forest: "Forêt", mountain: "Montagne",
+                desert: "Désert", swamp: "Marais", coast: "Côte",
+                ruins: "Ruines", cave: "Caverne"
+            }
+        };
+
+        let petsData = {};
+        let petNames = {};
+        let petsArray = [];
+        let selectedLocation = "plains";
+
+        const elements = {
+            petSearchInput: document.getElementById('petSearchInput'),
+            petDropdown: document.getElementById('petDropdown'),
+            selectedPetIdInput: document.getElementById('selectedPetId'),
+            calculateBtn: document.getElementById('calculateBtn'),
+            locationGrid: document.getElementById('locationGrid'),
+            locationInfo: document.getElementById('locationInfo'),
+            resultsSection: document.getElementById('resultsSection'),
+            toast: document.getElementById('toast')
+        };
+
+        const sliders = {
+            lovePoints: { 
+                element: document.getElementById('lovePoints'), 
+                display: document.getElementById('lovePointsValue') 
+            },
+            wealthRate: { 
+                element: document.getElementById('wealthRate'), 
+                display: document.getElementById('wealthRateValue'), 
+                category: document.getElementById('wealthCategory') 
+            },
+            riskRate: { 
+                element: document.getElementById('riskRate'), 
+                display: document. getElementById('riskRateValue'), 
+                category: document.getElementById('riskCategory') 
+            },
+            difficulty: { 
+                element: document.getElementById('difficulty'), 
+                display: document.getElementById('difficultyValue'), 
+                category:  document.getElementById('difficultyCategory') 
+            }
+        };
+
+        const durationInputs = {
+            days: document.getElementById('durationDays'),
+            hours:  document.getElementById('durationHours'),
+            minutes: document.getElementById('durationMinutes'),
+            display: document.getElementById('durationDisplay')
+        };
+
+        function getRiskCategoryName(riskRate) {
+            const cats = ExpeditionConstants.RISK_DISPLAY_CATEGORIES;
+            if (riskRate <= cats.VERY_LOW.MAX) return cats.VERY_LOW.NAME;
+            if (riskRate <= cats.LOW.MAX) return cats.LOW.NAME;
+            if (riskRate <= cats.MEDIUM.MAX) return cats.MEDIUM.NAME;
+            if (riskRate <= cats.HIGH.MAX) return cats.HIGH.NAME;
+            return cats.VERY_HIGH.NAME;
+        }
+
+        function getDifficultyCategoryName(difficulty) {
+            const cats = ExpeditionConstants.DIFFICULTY_DISPLAY_CATEGORIES;
+            if (difficulty <= cats.TRIVIAL. MAX) return cats.TRIVIAL.NAME;
+            if (difficulty <= cats.EASY.MAX) return cats.EASY.NAME;
+            if (difficulty <= cats. MODERATE.MAX) return cats.MODERATE.NAME;
+            if (difficulty <= cats.CHALLENGING. MAX) return cats.CHALLENGING. NAME;
+            return cats.TREACHEROUS.NAME;
+        }
+
+        function getRewardCategoryName(rewardIndex) {
+            const cats = ExpeditionConstants.REWARD_DISPLAY_CATEGORIES;
+            if (rewardIndex <= cats.MEAGER.MAX) return cats.MEAGER.NAME;
+            if (rewardIndex <= cats.MODEST.MAX) return cats.MODEST.NAME;
+            if (rewardIndex <= cats.SUBSTANTIAL.MAX) return cats.SUBSTANTIAL.NAME;
+            if (rewardIndex <= cats. BOUNTIFUL.MAX) return cats.BOUNTIFUL.NAME;
+            return cats.LEGENDARY.NAME;
+        }
+
+        function getWealthCategoryName(wealthRate) {
+            if (wealthRate <= 0.5) return "meager";
+            if (wealthRate <= 1.0) return "modest";
+            if (wealthRate <= 1.5) return "substantial";
+            return "legendary";
+        }
+
+        function formatDuration(minutes) {
+            if (minutes < 60) return `${minutes} min`;
+            if (minutes < 1440) {
+                const hours = Math.floor(minutes / 60);
+                const mins = minutes % 60;
+                return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+            }
+            const days = Math.floor(minutes / 1440);
+            const hours = Math.floor((minutes % 1440) / 60);
+            return hours > 0 ? `${days}j ${hours}h` : `${days}j`;
+        }
+
+        function calculateLinearScore(value, min, max) {
+            const percentage = (value - min) / (max - min);
+            return percentage * 3;
+        }
+
+        function calculateRewardIndex(duration, riskRate, difficulty, wealthRate) {
+            const durationScore = calculateLinearScore(duration, ExpeditionConstants.DURATION.MIN_MINUTES, ExpeditionConstants.DURATION.MAX_MINUTES);
+            const riskScore = calculateLinearScore(riskRate, ExpeditionConstants.RISK_RATE.MIN, ExpeditionConstants.RISK_RATE.MAX);
+            const difficultyScore = calculateLinearScore(difficulty, ExpeditionConstants. DIFFICULTY.MIN, ExpeditionConstants.DIFFICULTY. MAX);
+            const baseIndex = (durationScore * 3) + riskScore + difficultyScore;
+            const wealthRateMultiplier = 1 + (wealthRate - 1) * ExpeditionConstants.WEALTH_RATE_REWARD_INDEX_BONUS;
+            const adjustedIndex = baseIndex * wealthRateMultiplier;
+            return Math.max(0, Math.min(9, Math.round(adjustedIndex)));
+        }
+
+        function calculateEffectiveRisk(riskRate, difficulty, petForce, lovePoints, hasFood) {
+            let effectiveRisk = riskRate + difficulty / ExpeditionConstants.EFFECTIVE_RISK_FORMULA. DIFFICULTY_DIVISOR - petForce - lovePoints / ExpeditionConstants.EFFECTIVE_RISK_FORMULA.LOVE_DIVISOR;
+            if (! hasFood) effectiveRisk *= ExpeditionConstants.NO_FOOD_RISK_MULTIPLIER;
+            return Math. max(0, Math.min(100, effectiveRisk));
+        }
+
+        function calculateCloneTalismanChance(rewardIndex, hasCloneTalisman, hasBonus) {
+            if (hasCloneTalisman) return 0;
+            let dropChance = ExpeditionConstants.CLONE_TALISMAN.BASE_DROP_CHANCE + rewardIndex * ExpeditionConstants.CLONE_TALISMAN.REWARD_INDEX_BONUS_PER_POINT;
+            if (hasBonus) dropChance *= ExpeditionConstants.CLONE_TALISMAN.BONUS_EXPEDITION_MULTIPLIER;
+            return dropChance;
+        }
+
+        function calculateItemRarityRange(rewardIndex) {
+            const minRarity = Math.max(ExpeditionConstants.ITEM_REWARD.MIN_RARITY_FLOOR, rewardIndex - ExpeditionConstants.ITEM_REWARD.MIN_RARITY_OFFSET);
+            const maxRarity = ExpeditionConstants.ITEM_REWARD.MAX_RARITY_BY_REWARD_INDEX[rewardIndex];
+            return { minRarity, maxRarity };
+        }
+
+        function calculateBaseRewards(rewardIndex, locationType) {
+            const locationWeights = ExpeditionConstants. LOCATION_REWARD_WEIGHTS[locationType] || { money: 1, experience: 1, points:  1 };
+            return {
+                money: Math.round(ExpeditionConstants.REWARD_TABLES.MONEY[rewardIndex] * locationWeights. money),
+                experience: Math. round(ExpeditionConstants. REWARD_TABLES.EXPERIENCE[rewardIndex] * locationWeights.experience),
+                points: Math.round(ExpeditionConstants. REWARD_TABLES.POINTS[rewardIndex] * locationWeights.points)
+            };
+        }
+
+        function calculateSpeedModifier(petSpeed) {
+            return ExpeditionConstants.SPEED_DURATION_MODIFIER.BASE_MULTIPLIER - petSpeed * ExpeditionConstants.SPEED_DURATION_MODIFIER.REDUCTION_PER_SPEED_POINT;
+        }
+
+        function showToast() {
+            elements.toast.classList.add('show');
+            setTimeout(() => elements.toast.classList.remove('show'), 2000);
+        }
+
+        function loadEmbeddedData() {
+            petsData = EMBEDDED_PETS_DATA;
+            petNames = EMBEDDED_PET_NAMES;
+            petsArray = Object.entries(petsData)
+                .filter(([id]) => id !== "0")
+                .map(([id, data]) => ({
+                    id:  parseInt(id),
+                    name: petNames[id] || `Pet ${id}`,
+                    force: data.force || 0,
+                    speed: data.speed || 0,
+                    rarity: data.rarity || 1
+                }))
+                .sort((a, b) => a.name.localeCompare(b. name));
+        }
+
+        function filterPets(searchText) {
+            const filtered = petsArray.filter(pet => pet.name.toLowerCase().includes(searchText.toLowerCase()));
+            renderPetDropdown(filtered);
+        }
+
+        function renderPetDropdown(pets) {
+            if (pets.length === 0) {
+                elements.petDropdown. innerHTML = '<div style="padding: 12px; color: #718096;">Aucun familier trouvé</div>';
+                elements.petDropdown.classList.add('show');
+                return;
+            }
+            elements.petDropdown.innerHTML = pets.map(pet => `
+                <div class="pet-option" data-pet-id="${pet.id}">
+                    <div class="pet-option-name">${pet.name}</div>
+                    <div class="pet-option-stats">
+                        Force: ${pet.force} | Vitesse: ${pet.speed} | ${translations.petRarities[pet.rarity] || 'Commun'}
+                    </div>
+                </div>
+            `).join('');
+            elements. petDropdown.classList.add('show');
+            document.querySelectorAll('.pet-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    const petId = parseInt(option.dataset.petId);
+                    selectPet(petId);
+                });
+            });
+        }
+
+        function selectPet(petId) {
+            const pet = petsArray.find(p => p.id === petId);
+            if (! pet) return;
+            elements.selectedPetIdInput.value = petId;
+            elements. petSearchInput.value = pet.name;
+            elements.petDropdown.classList.remove('show');
+            document.getElementById('petForce').textContent = pet.force;
+            document.getElementById('petSpeed').textContent = pet.speed;
+            document.getElementById('petRarity').textContent = translations.petRarities[pet. rarity] || 'Commun';
+            document.getElementById('petInfo').classList.remove('hidden');
+        }
+
+        function updateSliderDisplays() {
+            sliders. lovePoints.display.textContent = sliders.lovePoints.element. value;
+            const wealthValue = parseFloat(sliders.wealthRate.element.value) / 100;
+            sliders.wealthRate.display.textContent = wealthValue.toFixed(1);
+            const wealthCat = getWealthCategoryName(wealthValue);
+            sliders.wealthRate.category.textContent = `Catégorie:  ${translations.wealthCategories[wealthCat]}`;
+            const riskValue = parseInt(sliders.riskRate. element.value);
+            sliders.riskRate.display.textContent = riskValue;
+            const riskCat = getRiskCategoryName(riskValue);
+            sliders.riskRate.category.textContent = `Catégorie: ${translations.riskCategories[riskCat]}`;
+            const diffValue = parseInt(sliders.difficulty. element.value);
+            sliders.difficulty.display.textContent = diffValue;
+            const diffCat = getDifficultyCategoryName(diffValue);
+            sliders.difficulty.category.textContent = `Catégorie: ${translations.difficultyCategories[diffCat]}`;
+        }
+
+        function updateDurationDisplay() {
+            const days = parseInt(durationInputs. days.value) || 0;
+            const hours = parseInt(durationInputs. hours.value) || 0;
+            const minutes = parseInt(durationInputs.minutes.value) || 0;
+            const totalMinutes = days * 1440 + hours * 60 + minutes;
+            durationInputs.display.textContent = `= ${totalMinutes} minutes au total (${formatDuration(totalMinutes)})`;
+        }
+
+        function updateLocationInfo() {
+            const weights = ExpeditionConstants.LOCATION_REWARD_WEIGHTS[selectedLocation] || { money: 1, experience: 1, points: 1 };
+            elements.locationInfo.textContent = `Bonus:  Argent ×${weights.money. toFixed(1)}, XP ×${weights.experience. toFixed(1)}, Points ×${weights.points.toFixed(1)}`;
+        }
+
+        function calculateResults() {
+            const petId = parseInt(elements.selectedPetIdInput.value);
+            if (!petId || ! petsData[petId]) {
+                alert('Veuillez sélectionner un familier valide');
+                return;
+            }
+            const pet = petsArray.find(p => p.id === petId);
+            const lovePoints = parseInt(sliders. lovePoints.element.value);
+            const wealthRate = parseFloat(sliders.wealthRate.element.value) / 100;
+            const riskRate = parseInt(sliders.riskRate.element.value);
+            const difficulty = parseInt(sliders.difficulty.element.value);
+            const hasFood = document.getElementById('hasFood').checked;
+            const hasCloneTalisman = document. getElementById('hasCloneTalisman').checked;
+            const hasCloneTalismanBonus = document.getElementById('hasCloneTalismanBonus').checked;
+            const days = parseInt(durationInputs. days.value) || 0;
+            const hours = parseInt(durationInputs.hours.value) || 0;
+            const minutes = parseInt(durationInputs. minutes.value) || 0;
+            const totalMinutes = days * 1440 + hours * 60 + minutes;
+            if (totalMinutes < ExpeditionConstants.DURATION.MIN_MINUTES) {
+                alert(`La durée minimale est de ${ExpeditionConstants.DURATION. MIN_MINUTES} minutes`);
+                return;
+            }
+            if (totalMinutes > ExpeditionConstants.DURATION.MAX_MINUTES) {
+                alert(`La durée maximale est de ${ExpeditionConstants.DURATION.MAX_MINUTES} minutes (3 jours)`);
