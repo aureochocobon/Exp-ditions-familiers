@@ -1,0 +1,17 @@
+**/.idea
+**/.vscode
+**/node_modules
+**/*.iml
+**/.directory
+*/logs
+**/dist
+**/coverage
+**/config/config.toml
+**/test-results.xml
+.run
+mqtt5
+bdd
+
+# Test command export files
+players-export-*.json
+ai_tournament_matchups_*.csv
