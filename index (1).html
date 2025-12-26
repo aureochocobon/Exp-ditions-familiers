@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Crypto - Suivi en Temps Réel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background:  linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2d3748;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom:  25px;
+            box-shadow:  0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        h2 {
+            color: #5a67d8;
+            margin-bottom: 25px;
+            font-size:  1.8em;
+            border-bottom: 3px solid #5a67d8;
+            padding-bottom: 10px;
+        }
+
+        .crypto-item {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            border-left: 5px solid #5a67d8;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .crypto-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .crypto-name {
+            font-size: 1.5em;
+            font-weight:  bold;
+            color: #2d3748;
+        }
+
+        .crypto-price {
+            font-size: 1.8em;
+            color: #5a67d8;
+            font-weight: bold;
+        }
+
+        .slider-container {
+            margin:  20px 0;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 1.1em;
+        }
+
+        .slider-value {
+            background: #5a67d8;
+            color: white;
+            padding: 6px 15px;
+            border-radius:  20px;
+            font-size: 1em;
+            min-width: 80px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 12px;
+            border-radius: 10px;
+            background: #e2e8f0;
+            outline: none;
+            -webkit-appearance: none;
+            margin:  10px 0;
+            cursor: pointer;
+        }
+
+        input[type="range"]: :-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+        }
+
+        input[type="range"]:active: :-webkit-slider-thumb {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        input[type="range"]:active::-moz-range-thumb {
+            background:  linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        .crypto-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top:  20px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius:  10px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            color: #2d3748;
+            font-size: 1.3em;
+            font-weight:  bold;
+        }
+
+        . summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius:  20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .summary h2 {
+            color: white;
+            border-bottom: 3px solid white;
+            margin-bottom: 25px;
+        }
+
+        .summary-value {
+            font-size: 3em;
+            font-weight:  bold;
+            margin:  20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .positive {
+            color: #48bb78;
+        }
+
+        .negative {
+            color: #f56565;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            font-size: 1.1em;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        button:active {
+            transform: translateY(-1px);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: white;
+            font-size: 1.3em;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .crypto-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .crypto-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-value {
+                font-size: 2em;
+            }
+        }
+
+        /* Animation de chargement */
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity:  0.5;
+            }
+        }
+
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        /* Badge de changement de prix */
+        .price-change {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size:  0.9em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .price-change.positive {
+            background: #c6f6d5;
+            color:  #22543d;
+        }
+
+        . price-change.negative {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Portfolio Crypto</h1>
+        
+        <div id="loading" class="loading">
+            Chargement des données en temps réel...
+        </div>
+
+        <div id="cryptoList"></div>
+
+        <div id="summary" class="card summary" style="display: none;">
+            <h2>📊 Résumé du Portfolio</h2>
+            <div class="summary-value" id="totalValue">0 €</div>
+            <div style="font-size: 1.2em;">Valeur Totale Actuelle</div>
+            <div style="margin-top: 25px; font-size: 1.3em;">
+                Investissement Total:  <span id="totalInvested" style="font-weight: bold;">0 €</span>
+            </div>
+            <div style="margin-top:  15px; font-size: 1.5em;">
+                Gain/Perte: <span id="totalGain" style="font-weight: bold;">0 €</span>
+            </div>
+            <button onclick="updatePortfolio()">🔄 Actualiser les Prix</button>
+        </div>
+    </div>
+
+    <script>
+        const cryptos = [
+            { id: 'bitcoin', name: 'Bitcoin', symbol: 'BTC', maxQuantity: 1, step: 0.001 },
+            { id: 'ethereum', name: 'Ethereum', symbol: 'ETH', maxQuantity: 10, step: 0.01 },
+            { id: 'cardano', name: 'Cardano', symbol: 'ADA', maxQuantity: 10000, step: 1 },
+            { id: 'solana', name: 'Solana', symbol: 'SOL', maxQuantity: 100, step: 0.1 },
+            { id: 'polkadot', name: 'Polkadot', symbol:  'DOT', maxQuantity: 1000, step: 0.1 }
+        ];
+
+        let portfolio = {};
+
+        async function fetchCryptoPrices() {
+            try {
+                const ids = cryptos.map(c => c.id).join(',');
+                const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=eur&include_24hr_change=true`);
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Erreur lors de la récupération des prix:', error);
+                return null;
+            }
+        }
+
+        function initializePortfolio() {
+            cryptos.forEach(crypto => {
+                portfolio[crypto.id] = {
+                    quantity: 0,
+                    buyPrice: 0
+                };
+            });
+        }
+
+        function formatNumber(num) {
+            return new Intl.NumberFormat('fr-FR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(num);
+        }
+
+        function updateQuantity(cryptoId, value) {
+            portfolio[cryptoId].quantity = parseFloat(value);
+            updateSummary();
+        }
+
+        function updateBuyPrice(cryptoId, value) {
+            portfolio[cryptoId].buyPrice = parseFloat(value);
+            updateSummary();
+        }
+
+        function updateSummary() {
+            let totalValue = 0;
+            let totalInvested = 0;
+
+            cryptos.forEach(crypto => {
+                const currentPrice = parseFloat(document.getElementById(`current-price-${crypto.id}`)?.textContent. replace(' €', '').replace(/\s/g, '')) || 0;
+                const quantity = portfolio[crypto.id].quantity;
+                const buyPrice = portfolio[crypto.id].buyPrice;
+
+                totalValue += currentPrice * quantity;
+                totalInvested += buyPrice * quantity;
+            });
+
+            const totalGain = totalValue - totalInvested;
+            const gainClass = totalGain >= 0 ? 'positive' : 'negative';
+
+            document.getElementById('totalValue').textContent = formatNumber(totalValue) + ' €';
+            document. getElementById('totalInvested').textContent = formatNumber(totalInvested) + ' €';
+            document.getElementById('totalGain').textContent = formatNumber(totalGain) + ' €';
+            document.getElementById('totalGain').className = gainClass;
+        }
+
+        async function renderPortfolio() {
+            const prices = await fetchCryptoPrices();
+            
+            if (!prices) {
+                document.getElementById('loading').textContent = 'Erreur de chargement.  Veuillez réessayer. ';
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('summary').style.display = 'block';
+
+            const listContainer = document.getElementById('cryptoList');
+            listContainer.innerHTML = '';
+
+            cryptos.forEach(crypto => {
+                const priceData = prices[crypto.id];
+                const currentPrice = priceData. eur;
+                const change24h = priceData. eur_24h_change;
+                const changeClass = change24h >= 0 ? 'positive' : 'negative';
+                const changeSymbol = change24h >= 0 ? '▲' : '▼';
+
+                const quantity = portfolio[crypto.id].quantity;
+                const buyPrice = portfolio[crypto.id].buyPrice;
+                const currentValue = currentPrice * quantity;
+                const investedValue = buyPrice * quantity;
+                const gain = currentValue - investedValue;
+                const gainClass = gain >= 0 ? 'positive' : 'negative';
+
+                const cryptoHTML = `
+                    <div class="card crypto-item">
+                        <div class="crypto-header">
+                            <div class="crypto-name">${crypto.name} (${crypto.symbol})</div>
+                            <div>
+                                <span class="crypto-price" id="current-price-${crypto. id}">${formatNumber(currentPrice)} €</span>
+                                <span class="price-change ${changeClass}">${changeSymbol} ${Math.abs(change24h).toFixed(2)}%</span>
+                            </div>
+                        </div>
+
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>📊 Quantité possédée</span>
+                                <span class="slider-value" id="quantity-value-${crypto.id}">${quantity} ${crypto.symbol}</span>
+                            </div>
+                            <input type="range" 
+                                   min="0" 
+                                   max="${crypto. maxQuantity}" 
+                                   step="${crypto.step}" 
+                                   value="${quantity}"
+                                   oninput="document.getElementById('quantity-value-${crypto.id}').textContent = this.value + ' ${crypto.symbol}'; updateQuantity('${crypto.id}', this. value)">
+                        </div>
+
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>💶 Prix d'achat moyen</span>
+                                <span class="slider-value" id="buy-price-value-${crypto.id}">${formatNumber(buyPrice)} €</span>
+                            </div>
+                            <input type="range" 
+                                   min="0" 
+                                   max="${currentPrice * 2}" 
+                                   step="${currentPrice * 0.01}" 
+                                   value="${buyPrice}"
+                                   oninput="document.getElementById('buy-price-value-${crypto. id}').textContent = parseFloat(this.value).toFixed(2) + ' €'; updateBuyPrice('${crypto.id}', this.value)">
+                        </div>
+
+                        <div class="crypto-stats">
+                            <div class="stat-box">
+                                <div class="stat-label">Valeur Actuelle</div>
+                                <div class="stat-value">${formatNumber(currentValue)} €</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Investissement</div>
+                                <div class="stat-value">${formatNumber(investedValue)} €</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Gain/Perte</div>
+                                <div class="stat-value ${gainClass}">${formatNumber(gain)} €</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                listContainer.innerHTML += cryptoHTML;
+            });
+        }
+
+        async function updatePortfolio() {
+            document.getElementById('loading').style.display = 'block';
+            await renderPortfolio();
+        }
+
+        // Initialisation
+        initializePortfolio();
+        renderPortfolio();
+
+        // Actualisation automatique toutes les 60 secondes
+        setInterval(updatePortfolio, 60000);
+    </script>
+</body>
+</html>
